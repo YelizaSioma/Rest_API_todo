@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/gin-gonic/gin"
 	"net/http"
@@ -43,42 +44,52 @@ func addTodo(context *gin.Context) {
 	context.IndentedJSON(http.StatusCreated, newTodo)
 }
 
-/*
-change that so we'll have a function that returns atodo object and error by surching via ID
-then change the function, so it'll use that helper func
-*/
-func updateTodo(context *gin.Context) {
-	//In the body, you only send the fields that you want to update, like title or completed
-	//It'll specify the ID through the endpoint
+func getTodoById(id string) (*todo, error) {
+	for i, todo := range todos {
+		if todo.ID == id {
+			return &todos[i], nil
+		}
+	}
+
+	return nil, errors.New("todo not found")
+}
+
+// we need to extract path parameter
+// all info is inside the context
+// This function will return only specified todofrom all list of todos. If not found - return an error
+func getTodo(context *gin.Context) {
 	id := context.Param("id")
+	todo, err := getTodoById(id)
 
-	var updatedTodo todo
-
-	if err := context.BindJSON(&updatedTodo); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+	if err != nil {
+		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
 		return
 	}
 
-	//add a getTodoById(id string)(*todo, error){}
-	for i, t := range todos {
-		if t.ID == id {
-			if updatedTodo.Item != "" {
-				todos[i].Item = updatedTodo.Item // Update the title if provided
-			}
-			todos[i].Completed = updatedTodo.Completed
-			context.IndentedJSON(http.StatusOK, todos[i])
-			return
-		}
+	context.IndentedJSON(http.StatusOK, todo)
+}
+
+func toggleTodoStatus(context *gin.Context) {
+	id := context.Param("id")
+	todo, err := getTodoById(id)
+
+	if err != nil {
+		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
+		return
 	}
-	context.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+
+	todo.Completed = !todo.Completed
+
+	context.IndentedJSON(http.StatusOK, todo)
 }
 
 func main() {
 	router := gin.Default()
 
 	router.GET("/todos", getTodos)
+	router.GET("/todos/:id", getTodo)
+	router.PATCH("/todos/:id", toggleTodoStatus)
 	router.POST("/todos", addTodo)
-	router.PUT("/todos/:id", updateTodo)
 
-	router.Run("localhost:9090")
+	router.Run("localhost:9091")
 }
