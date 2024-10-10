@@ -83,6 +83,36 @@ func toggleTodoStatus(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, todo)
 }
 
+/*
+change that so we'll have a function that returns atodo object and error by surching via ID
+then change the function, so it'll use that helper func
+*/
+func updateTodo(context *gin.Context) {
+	//In the body, you only send the fields that you want to update, like title or completed
+	//It'll specify the ID through the endpoint
+	id := context.Param("id")
+	currTodo, currErr := getTodoById(id)
+
+	if currErr != nil {
+		context.IndentedJSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
+		return
+	}
+
+	var updatedTodo todo
+
+	if err := context.BindJSON(&updatedTodo); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+		return
+	}
+
+	if updatedTodo.Item != "" {
+		currTodo.Item = updatedTodo.Item // Update the title if provided
+	}
+	currTodo.Completed = updatedTodo.Completed
+
+	context.IndentedJSON(http.StatusOK, currTodo)
+}
+
 func main() {
 	router := gin.Default()
 
@@ -90,6 +120,7 @@ func main() {
 	router.GET("/todos/:id", getTodo)
 	router.PATCH("/todos/:id", toggleTodoStatus)
 	router.POST("/todos", addTodo)
+	router.PUT("/todos/:id", updateTodo)
 
 	router.Run("localhost:9091")
 }
