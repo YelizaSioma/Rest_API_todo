@@ -1,5 +1,51 @@
 package main
 
+/*
+Endpoints
+1. Get All Todos
+Endpoint: GET /todos
+
+Description: Retrieves a list of all to-do items.
+
+2. Get a _Todo by ID
+Endpoint: GET /todos/:id
+
+Description: Retrieves details of a single to-do item by its ID.
+
+Path Parameter:
+
+id (integer) – ID of the to-do item to retrieve.
+
+3. Toggle _Todo Status
+Endpoint: PATCH /todos/:id
+
+Description: Toggles the completed status of the specified to-do item.
+
+Path Parameter:
+
+id (integer) – ID of the to-do item to toggle.
+
+4. Add a New _Todo
+Endpoint: POST /todos
+
+Description: Adds a new to-do item.
+
+5. Update a _Todo
+Endpoint: PUT /todos/:id
+
+Description: Updates the title and status of an existing to-do item.
+
+Path Parameter:
+
+id (integer) – ID of the to-do item to update.
+
+Common Response Codes
+200 OK: Request succeeded.
+201 Created: Resource successfully created.
+404 Not Found: Resource not found.
+400 Bad Request: Invalid request payload or parameters.
+*/
+
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
