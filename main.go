@@ -123,5 +123,8 @@ func main() {
 	router.POST("/todos", addTodo)
 	router.PUT("/todos/:id", updateTodo)
 
-	router.Run("localhost:9090")
+	err := router.Run("localhost:9090")
+	if err != nil {
+		return
+	}
 }
