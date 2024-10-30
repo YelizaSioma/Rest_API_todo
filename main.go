@@ -14,7 +14,7 @@ type todo struct {
 	Completed bool   `json:"completed"`
 }
 
-// client and a server communicate w each other through a JSON
+// client and a server communicate with each other through a JSON
 var todos = []todo{
 	{ID: "1", Item: "Clean Room", Completed: false},
 	{ID: "2", Item: "Wash the Dishes", Completed: false},
@@ -40,6 +40,14 @@ func addTodo(context *gin.Context) {
 		return
 	}
 
+	//check if already exists
+	for _, todo := range todos {
+		if todo.ID == newTodo.ID {
+			context.IndentedJSON(http.StatusExpectationFailed, gin.H{"message": "Todo already exist"})
+			return
+		}
+	}
+
 	todos = append(todos, newTodo)
 	context.IndentedJSON(http.StatusCreated, newTodo)
 }
@@ -47,6 +55,7 @@ func addTodo(context *gin.Context) {
 func getTodoById(id string) (*todo, error) {
 	for i, todo := range todos {
 		if todo.ID == id {
+
 			return &todos[i], nil
 		}
 	}
@@ -54,8 +63,6 @@ func getTodoById(id string) (*todo, error) {
 	return nil, errors.New("todo not found")
 }
 
-// we need to extract path parameter
-// all info is inside the context
 // This function will return only specified todofrom all list of todos. If not found - return an error
 func getTodo(context *gin.Context) {
 	id := context.Param("id")
@@ -83,13 +90,7 @@ func toggleTodoStatus(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, todo)
 }
 
-/*
-change that so we'll have a function that returns atodo object and error by surching via ID
-then change the function, so it'll use that helper func
-*/
 func updateTodo(context *gin.Context) {
-	//In the body, you only send the fields that you want to update, like title or completed
-	//It'll specify the ID through the endpoint
 	id := context.Param("id")
 	currTodo, currErr := getTodoById(id)
 
@@ -122,5 +123,5 @@ func main() {
 	router.POST("/todos", addTodo)
 	router.PUT("/todos/:id", updateTodo)
 
-	router.Run("localhost:9091")
+	router.Run("localhost:9090")
 }
